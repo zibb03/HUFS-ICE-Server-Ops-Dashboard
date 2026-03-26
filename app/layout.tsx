@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import { Manrope, Inter } from 'next/font/google'
-import Ticker from '@/components/Ticker'
-import Sidebar from '@/components/Sidebar'
+import AppShell from '@/components/AppShell'
 import './globals.css'
 
 const manrope = Manrope({ subsets: ['latin'], variable: '--font-manrope', display: 'swap' })
@@ -16,13 +15,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="ko" className={`${manrope.variable} ${inter.variable}`}>
       <body className="antialiased">
-        <Ticker />
-        <div className="flex overflow-hidden" style={{ height: 'calc(100vh - 36px)' }}>
-          <Sidebar />
-          <main className="flex-1 overflow-y-auto scrollbar-thin bg-surface-low px-6 py-6">
-            {children}
-          </main>
-        </div>
+        <AppShell>{children}</AppShell>
       </body>
     </html>
   )
