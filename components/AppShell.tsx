@@ -24,6 +24,11 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
       <div className="flex overflow-hidden" style={{ height: 'calc(100vh - 36px)' }}>
 
+        {/* 데스크톱 사이드바 — md 이상에서만 플렉스 흐름에 포함 */}
+        <div className="hidden md:block flex-shrink-0 h-full">
+          <Sidebar />
+        </div>
+
         {/* 모바일 오버레이 */}
         {open && (
           <div
@@ -33,27 +38,16 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
           />
         )}
 
-        {/* 사이드바 — 모바일: 고정 슬라이드, 데스크톱: 일반 흐름 */}
+        {/* 모바일 사이드바 패널 — fixed, md 이상에서는 숨김 */}
         <div
-          className="md:static md:translate-x-0 md:h-full md:z-auto fixed z-50 transition-transform duration-300 ease-in-out"
-          style={{
-            top: 36,
-            left: 0,
-            height: 'calc(100vh - 36px)',
-            transform: open ? 'translateX(0)' : undefined,
-          }}
+          className={[
+            'fixed z-50 md:hidden',
+            'transition-transform duration-300 ease-in-out',
+            open ? 'translate-x-0' : '-translate-x-full',
+          ].join(' ')}
+          style={{ top: 36, left: 0, height: 'calc(100vh - 36px)', width: 220 }}
         >
-          {/* translate-x는 모바일에서만 적용 — md에서는 md:translate-x-0으로 덮어씀 */}
-          <div
-            className={[
-              'h-full',
-              'transition-transform duration-300 ease-in-out',
-              'md:transform-none',
-              open ? 'translate-x-0' : '-translate-x-full md:translate-x-0',
-            ].join(' ')}
-          >
-            <Sidebar onClose={() => setOpen(false)} />
-          </div>
+          <Sidebar onClose={() => setOpen(false)} />
         </div>
 
         {/* 메인 콘텐츠 */}

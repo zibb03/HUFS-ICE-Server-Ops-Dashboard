@@ -39,8 +39,8 @@ function ThreatGauge({ label, value, subLabel }: { label: string; value: number;
   return (
     <div className="bg-surface-low rounded-md p-3 flex flex-col items-center">
       <div className="text-xs text-secondary mb-2">{label}</div>
-      <div className="relative" style={{ width: 88, height: 88 }}>
-        <svg viewBox="0 0 100 100" width="88" height="88">
+      <div className="relative w-full max-w-[88px] mx-auto" style={{ aspectRatio: '1' }}>
+        <svg viewBox="0 0 100 100" className="w-full h-full">
           <circle cx="50" cy="50" r="40" fill="none" stroke="#dde3f0" strokeWidth="8"
             strokeDasharray="188.5 251.3" strokeDashoffset="-31.4"
             strokeLinecap="round" transform="rotate(135 50 50)" />

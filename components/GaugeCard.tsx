@@ -48,8 +48,8 @@ export default function GaugeCard({
         {title}
       </div>
 
-      <div className="relative" style={{ width: 100, height: 100 }}>
-        <svg viewBox="0 0 100 100" width="100" height="100">
+      <div className="relative w-full max-w-[100px] mx-auto" style={{ aspectRatio: '1' }}>
+        <svg viewBox="0 0 100 100" className="w-full h-full">
           {/* Track */}
           <circle
             cx="50" cy="50" r="40" fill="none"
