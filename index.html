@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>한국외국어대학교 서버종합상황실</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#000d2f',
+            'primary-container': '#00205b',
+            'on-primary': '#ffffff',
+            secondary: '#4a5568',
+            'secondary-container': '#dde3f0',
+            surface: '#f7f9fb',
+            'surface-low': '#f2f4f6',
+            'surface-lowest': '#ffffff',
+            'surface-high': '#e6e8ea',
+            'on-surface': '#191c1e',
+            error: '#ba1a1a',
+            'error-container': '#ffdad6',
+            tertiary: '#230500',
+            'tertiary-container': '#471200',
+            'on-tertiary': '#ffffff',
+            success: '#2d6a4f',
+            'success-container': '#d8f3dc',
+          },
+          fontFamily: {
+            display: ['Manrope', 'sans-serif'],
+            body: ['Inter', 'sans-serif'],
+          },
+          borderRadius: {
+            md: '0.75rem',
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    h1, h2, h3, .font-display { font-family: 'Manrope', sans-serif; }
+
+    /* Ticker animation */
+    @keyframes ticker {
+      0% { transform: translateX(100%); }
+      100% { transform: translateX(-100%); }
+    }
+    .ticker-content { animation: ticker 30s linear infinite; white-space: nowrap; }
+
+    /* Gauge SVG */
+    .gauge-ring {
+      transition: stroke-dashoffset 1s ease-in-out;
+    }
+
+    /* Bar animation */
+    .bar-fill {
+      transition: width 1.2s ease-in-out;
+    }
+
+    /* Sidebar active */
+    .nav-item.active {
+      background: rgba(255,255,255,0.12);
+      border-left: 3px solid #ffffff;
+    }
+    .nav-item {
+      border-left: 3px solid transparent;
+      transition: all 0.2s;
+    }
+    .nav-item:hover {
+      background: rgba(255,255,255,0.07);
+    }
+
+    /* Glassmorphism tooltip */
+    .glass {
+      background: rgba(255,255,255,0.8);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+    }
+
+    /* Status badge pulse */
+    @keyframes pulse-dot {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    .pulse-dot { animation: pulse-dot 2s ease-in-out infinite; }
+
+    /* Card hover */
+    .dash-card:hover {
+      box-shadow: 0 12px 40px rgba(0,32,91,0.08);
+      transform: translateY(-1px);
+      transition: all 0.2s ease;
+    }
+    .dash-card { transition: all 0.2s ease; }
+
+    /* Custom scrollbar */
+    ::-webkit-scrollbar { width: 5px; }
+    ::-webkit-scrollbar-track { background: #f2f4f6; }
+    ::-webkit-scrollbar-thumb { background: #c5cad4; border-radius: 10px; }
+  </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex flex-col">
+
+  <!-- ===== ANNOUNCEMENT TICKER ===== -->
+  <div class="w-full bg-gradient-to-r from-primary to-primary-container overflow-hidden flex items-center" style="height:36px;">
+    <div class="flex-shrink-0 glass px-3 py-1 mx-2 rounded text-xs font-display font-700 text-primary tracking-widest uppercase z-10">
+      공지
+    </div>
+    <div class="flex-1 overflow-hidden relative h-full flex items-center">
+      <div class="ticker-content text-on-primary text-xs font-body" style="font-size:0.75rem; letter-spacing:0.02em;">
+        &nbsp;&nbsp;&nbsp;&nbsp;
+        📢 2024년 5월 22일 (수) 전체 서버 통합 업그레이드 프로그램 시작 &nbsp;|&nbsp;
+        📋 2024년 5월 22일 (수) 보안 강화를 위한 새로운 네트워크 보안 프로토콜 적용 &nbsp;|&nbsp;
+        ⚠️ 서버실 출입 시 각 층 증명에 대한 업데이트 지침 안내 &nbsp;|&nbsp;
+        🔧 정기 점검: 매월 마지막 주 금요일 23:00~익일 02:00 &nbsp;|&nbsp;
+        📌 IP 신청 처리 기간: 영업일 기준 2~3일 소요
+      </div>
+    </div>
+  </div>
+
+  <div class="flex flex-1 overflow-hidden" style="height: calc(100vh - 36px);">
+
+    <!-- ===== SIDEBAR ===== -->
+    <aside class="flex-shrink-0 flex flex-col overflow-y-auto" style="width:220px; background: linear-gradient(180deg, #000d2f 0%, #00205b 100%);">
+      <!-- Logo -->
+      <div class="px-5 pt-6 pb-5 border-b border-white/10">
+        <div class="text-on-primary font-display font-800 text-sm leading-tight">한국외국어대학교</div>
+        <div class="text-on-primary/70 font-body text-xs mt-0.5">서버종합상황실</div>
+        <div class="mt-3 flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-green-400 pulse-dot"></span>
+          <span class="text-green-400 text-xs font-body">시스템 정상</span>
+        </div>
+      </div>
+
+      <!-- Nav -->
+      <nav class="flex-1 px-3 py-4 space-y-0.5">
+        <div class="text-white/40 text-xs font-display font-600 uppercase tracking-widest px-2 pb-2">메뉴</div>
+
+        <a href="#dashboard" class="nav-item active flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer">
+          <svg class="w-4 h-4 text-white/90" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+          <span class="text-white/90 text-sm font-body">대시보드</span>
+        </a>
+
+        <a href="#network" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer">
+          <svg class="w-4 h-4 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><circle cx="12" cy="5" r="2"/><circle cx="5" cy="19" r="2"/><circle cx="19" cy="19" r="2"/><line x1="12" y1="7" x2="5" y2="17"/><line x1="12" y1="7" x2="19" y2="17"/></svg>
+          <span class="text-white/60 text-sm font-body">네트워크</span>
+        </a>
+
+        <div class="text-white/40 text-xs font-display font-600 uppercase tracking-widest px-2 pt-4 pb-2">서비스</div>
+
+        <a href="#ip-request" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer">
+          <svg class="w-4 h-4 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+          <span class="text-white/60 text-sm font-body">IP 요청</span>
+        </a>
+
+        <a href="#equipment" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer">
+          <svg class="w-4 h-4 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          <span class="text-white/60 text-sm font-body">장비 대여</span>
+        </a>
+
+        <a href="#printer" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer">
+          <svg class="w-4 h-4 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          <span class="text-white/60 text-sm font-body">프린터 요청</span>
+        </a>
+
+        <a href="#maintenance" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer">
+          <svg class="w-4 h-4 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+          <span class="text-white/60 text-sm font-body">유지보수 신청</span>
+        </a>
+
+        <div class="text-white/40 text-xs font-display font-600 uppercase tracking-widest px-2 pt-4 pb-2">관리</div>
+
+        <a href="#notices" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer">
+          <svg class="w-4 h-4 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+          <span class="text-white/60 text-sm font-body">공지사항</span>
+        </a>
+
+        <a href="#logs" class="nav-item flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer">
+          <svg class="w-4 h-4 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          <span class="text-white/60 text-sm font-body">로그</span>
+        </a>
+      </nav>
+
+      <!-- Footer -->
+      <div class="px-5 py-4 border-t border-white/10">
+        <div class="text-white/30 text-xs font-body">HUFS Server Ops</div>
+        <div class="text-white/20 text-xs font-body mt-0.5">© 2024 한국외국어대학교</div>
+      </div>
+    </aside>
+
+    <!-- ===== MAIN CONTENT ===== -->
+    <main class="flex-1 overflow-y-auto bg-surface-low px-6 py-6">
+
+      <!-- Page Header -->
+      <div class="mb-6">
+        <div class="text-xs font-display font-600 uppercase tracking-widest text-secondary mb-1">Server Operations Center</div>
+        <h1 class="font-display font-800 text-2xl text-on-surface">통합 대시보드</h1>
+        <div class="text-xs font-body text-secondary mt-1" id="current-time">마지막 업데이트: 로딩 중...</div>
+      </div>
+
+      <!-- ===== ROW 1: Server Status Gauges ===== -->
+      <section class="mb-5">
+        <div class="flex items-center gap-2 mb-3">
+          <h2 class="font-display font-700 text-base text-on-surface">서버실 상태</h2>
+          <span class="text-xs font-body text-secondary uppercase tracking-widest">/ Server Room Status</span>
+        </div>
+        <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+
+          <!-- Temperature Gauge -->
+          <div class="dash-card bg-surface-lowest rounded-md p-4 flex flex-col items-center" style="box-shadow: 0 2px 8px rgba(0,32,91,0.04);">
+            <div class="text-xs font-display font-600 uppercase tracking-widest text-secondary mb-3">현재 온도</div>
+            <div class="relative" style="width:100px;height:100px;">
+              <svg viewBox="0 0 100 100" width="100" height="100">
+                <circle cx="50" cy="50" r="40" fill="none" stroke="#dde3f0" stroke-width="8" stroke-dasharray="188.5 251.3" stroke-dashoffset="-31.4" stroke-linecap="round" transform="rotate(135 50 50)"/>
+                <circle cx="50" cy="50" r="40" fill="none" stroke="#000d2f" stroke-width="8"
+                  stroke-dasharray="100.7 251.3" stroke-dashoffset="-31.4"
+                  stroke-linecap="round" transform="rotate(135 50 50)" class="gauge-ring" id="temp-gauge"/>
+              </svg>
+              <div class="absolute inset-0 flex flex-col items-center justify-center">
+                <span class="font-display font-800 text-xl text-on-surface">22°</span>
+                <span class="text-xs font-body text-secondary">C</span>
+              </div>
+            </div>
+            <div class="mt-2 text-xs font-body text-success font-600">Optimal Range</div>
+            <div class="mt-3 w-full grid grid-cols-2 gap-1 text-center">
+              <div class="bg-surface-low rounded p-1.5">
+                <div class="text-xs text-secondary font-body">최고</div>
+                <div class="text-sm font-display font-700 text-on-surface">25°C</div>
+              </div>
+              <div class="bg-surface-low rounded p-1.5">
+                <div class="text-xs text-secondary font-body">최저</div>
+                <div class="text-sm font-display font-700 text-on-surface">18°C</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Humidity Gauge -->
+          <div class="dash-card bg-surface-lowest rounded-md p-4 flex flex-col items-center" style="box-shadow: 0 2px 8px rgba(0,32,91,0.04);">
+            <div class="text-xs font-display font-600 uppercase tracking-widest text-secondary mb-3">현재 습도</div>
+            <div class="relative" style="width:100px;height:100px;">
+              <svg viewBox="0 0 100 100" width="100" height="100">
+                <circle cx="50" cy="50" r="40" fill="none" stroke="#dde3f0" stroke-width="8" stroke-dasharray="188.5 251.3" stroke-dashoffset="-31.4" stroke-linecap="round" transform="rotate(135 50 50)"/>
+                <circle cx="50" cy="50" r="40" fill="none" stroke="#000d2f" stroke-width="8"
+                  stroke-dasharray="84.8 251.3" stroke-dashoffset="-31.4"
+                  stroke-linecap="round" transform="rotate(135 50 50)" class="gauge-ring"/>
+              </svg>
+              <div class="absolute inset-0 flex flex-col items-center justify-center">
+                <span class="font-display font-800 text-xl text-on-surface">45%</span>
+                <span class="text-xs font-body text-secondary">RH</span>
+              </div>
+            </div>
+            <div class="mt-2 text-xs font-body text-success font-600">Standard</div>
+            <div class="mt-3 w-full bg-surface-low rounded p-2 text-center">
+              <div class="text-xs text-secondary font-body">권장 범위</div>
+              <div class="text-sm font-display font-700 text-on-surface">40 ~ 60%</div>
+            </div>
+          </div>
+
+          <!-- Overall Status Gauge -->
+          <div class="dash-card bg-surface-lowest rounded-md p-4 flex flex-col items-center" style="box-shadow: 0 2px 8px rgba(0,32,91,0.04);">
+            <div class="text-xs font-display font-600 uppercase tracking-widest text-secondary mb-3">전체 상태</div>
+            <div class="relative" style="width:100px;height:100px;">
+              <svg viewBox="0 0 100 100" width="100" height="100">
+                <circle cx="50" cy="50" r="40" fill="none" stroke="#dde3f0" stroke-width="8" stroke-dasharray="188.5 251.3" stroke-dashoffset="-31.4" stroke-linecap="round" transform="rotate(135 50 50)"/>
+                <circle cx="50" cy="50" r="40" fill="none" stroke="#2d6a4f" stroke-width="8"
+                  stroke-dasharray="169.1 251.3" stroke-dashoffset="-31.4"
+                  stroke-linecap="round" transform="rotate(135 50 50)" class="gauge-ring"/>
+              </svg>
+              <div class="absolute inset-0 flex flex-col items-center justify-center">
+                <svg class="w-7 h-7 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+              </div>
+            </div>
+            <div class="mt-2 text-xs font-body text-success font-600">정상</div>
+            <div class="mt-3 w-full bg-surface-low rounded p-2 text-center">
+              <div class="text-xs text-secondary font-body">가동률</div>
+              <div class="text-sm font-display font-700 text-on-surface">99.97%</div>
+            </div>
+          </div>
+
+          <!-- Fire Detection -->
+          <div class="dash-card bg-surface-lowest rounded-md p-4 flex flex-col items-center" style="box-shadow: 0 2px 8px rgba(0,32,91,0.04);">
+            <div class="text-xs font-display font-600 uppercase tracking-widest text-secondary mb-3">화재 감지</div>
+            <div class="relative" style="width:100px;height:100px;">
+              <svg viewBox="0 0 100 100" width="100" height="100">
+                <circle cx="50" cy="50" r="40" fill="none" stroke="#d8f3dc" stroke-width="8" stroke-dasharray="188.5 251.3" stroke-dashoffset="-31.4" stroke-linecap="round" transform="rotate(135 50 50)"/>
+                <circle cx="50" cy="50" r="40" fill="none" stroke="#2d6a4f" stroke-width="8"
+                  stroke-dasharray="7.5 251.3" stroke-dashoffset="-31.4"
+                  stroke-linecap="round" transform="rotate(135 50 50)" class="gauge-ring"/>
+              </svg>
+              <div class="absolute inset-0 flex flex-col items-center justify-center">
+                <svg class="w-7 h-7 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"/></svg>
+              </div>
+            </div>
+            <div class="mt-2 text-xs font-body text-success font-600">감지 없음</div>
+            <div class="mt-3 w-full bg-surface-low rounded p-2 text-center">
+              <div class="text-xs text-secondary font-body">스프링클러</div>
+              <div class="text-sm font-display font-700 text-on-surface">대기 중</div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- ===== ROW 2: Security + Server Load ===== -->
+      <div class="grid grid-cols-1 gap-4 mb-5 lg:grid-cols-2">
+
+        <!-- Security Status -->
+        <section class="dash-card bg-surface-lowest rounded-md p-5" style="box-shadow: 0 2px 8px rgba(0,32,91,0.04);">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <div class="text-xs font-display font-600 uppercase tracking-widest text-secondary mb-0.5">Security Status</div>
+              <h2 class="font-display font-700 text-base text-on-surface">보안 위협 현황</h2>
+            </div>
+            <span class="text-xs font-body bg-success-container text-success px-2.5 py-1 rounded-full font-600">전체 정상</span>
+          </div>
+          <div class="grid grid-cols-2 gap-3">
+
+            <!-- Security Threat Gauge -->
+            <div class="bg-surface-low rounded-md p-3 flex flex-col items-center">
+              <div class="text-xs font-body text-secondary mb-2">보안 위협 상태</div>
+              <div class="relative" style="width:88px;height:88px;">
+                <svg viewBox="0 0 100 100" width="88" height="88">
+                  <circle cx="50" cy="50" r="40" fill="none" stroke="#dde3f0" stroke-width="8" stroke-dasharray="188.5 251.3" stroke-dashoffset="-31.4" stroke-linecap="round" transform="rotate(135 50 50)"/>
+                  <circle cx="50" cy="50" r="40" fill="none" stroke="#2d6a4f" stroke-width="8"
+                    stroke-dasharray="18.9 251.3" stroke-dashoffset="-31.4"
+                    stroke-linecap="round" transform="rotate(135 50 50)"/>
+                </svg>
+                <div class="absolute inset-0 flex flex-col items-center justify-center">
+                  <svg class="w-6 h-6 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                </div>
+              </div>
+              <div class="mt-1.5 px-2.5 py-0.5 bg-success-container rounded-full text-xs font-body text-success font-600">낮음</div>
+              <div class="mt-1 text-xs font-body text-secondary">보안 위협 없음</div>
+            </div>
+
+            <!-- National Security Threat Gauge -->
+            <div class="bg-surface-low rounded-md p-3 flex flex-col items-center">
+              <div class="text-xs font-body text-secondary mb-2">국가보안 위협 상태</div>
+              <div class="relative" style="width:88px;height:88px;">
+                <svg viewBox="0 0 100 100" width="88" height="88">
+                  <circle cx="50" cy="50" r="40" fill="none" stroke="#dde3f0" stroke-width="8" stroke-dasharray="188.5 251.3" stroke-dashoffset="-31.4" stroke-linecap="round" transform="rotate(135 50 50)"/>
+                  <circle cx="50" cy="50" r="40" fill="none" stroke="#2d6a4f" stroke-width="8"
+                    stroke-dasharray="18.9 251.3" stroke-dashoffset="-31.4"
+                    stroke-linecap="round" transform="rotate(135 50 50)"/>
+                </svg>
+                <div class="absolute inset-0 flex flex-col items-center justify-center">
+                  <svg class="w-6 h-6 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+                </div>
+              </div>
+              <div class="mt-1.5 px-2.5 py-0.5 bg-success-container rounded-full text-xs font-body text-success font-600">낮음</div>
+              <div class="mt-1 text-xs font-body text-secondary">국가보안위협 없음</div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- Server Load -->
+        <section class="dash-card bg-surface-lowest rounded-md p-5" style="box-shadow: 0 2px 8px rgba(0,32,91,0.04);">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <div class="text-xs font-display font-600 uppercase tracking-widest text-secondary mb-0.5">Infrastructure</div>
+              <h2 class="font-display font-700 text-base text-on-surface">서버 부하 현황</h2>
+            </div>
+            <span class="text-xs font-body text-secondary" id="load-time">실시간</span>
+          </div>
+
+          <div class="space-y-4">
+            <!-- Web Server -->
+            <div>
+              <div class="flex justify-between items-center mb-1.5">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-primary"></span>
+                  <span class="text-sm font-body text-on-surface">웹 서버</span>
+                </div>
+                <span class="text-sm font-display font-700 text-on-surface">30%</span>
+              </div>
+              <div class="w-full bg-surface-high rounded-full h-2">
+                <div class="bg-primary h-2 rounded-full bar-fill" style="width:30%"></div>
+              </div>
+            </div>
+
+            <!-- DB Server -->
+            <div>
+              <div class="flex justify-between items-center mb-1.5">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full" style="background:#00205b;"></span>
+                  <span class="text-sm font-body text-on-surface">DB 서버</span>
+                </div>
+                <span class="text-sm font-display font-700 text-on-surface">55%</span>
+              </div>
+              <div class="w-full bg-surface-high rounded-full h-2">
+                <div class="h-2 rounded-full bar-fill" style="width:55%;background:#00205b;"></div>
+              </div>
+            </div>
+
+            <!-- Network -->
+            <div>
+              <div class="flex justify-between items-center mb-1.5">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full" style="background:#4a5568;"></span>
+                  <span class="text-sm font-body text-on-surface">네트워크</span>
+                </div>
+                <span class="text-sm font-display font-700 text-on-surface">20%</span>
+              </div>
+              <div class="w-full bg-surface-high rounded-full h-2">
+                <div class="h-2 rounded-full bar-fill" style="width:20%;background:#4a5568;"></div>
+              </div>
+            </div>
+
+            <!-- Storage -->
+            <div>
+              <div class="flex justify-between items-center mb-1.5">
+                <div class="flex items-center gap-2">
+                  <span class="w-2 h-2 rounded-full bg-amber-600"></span>
+                  <span class="text-sm font-body text-on-surface">스토리지</span>
+                </div>
+                <span class="text-sm font-display font-700 text-on-surface">72%</span>
+              </div>
+              <div class="w-full bg-surface-high rounded-full h-2">
+                <div class="h-2 rounded-full bar-fill bg-amber-600" style="width:72%"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+      </div>
+
+      <!-- ===== ROW 3: Quick Actions ===== -->
+      <section class="mb-5">
+        <div class="flex items-center gap-2 mb-3">
+          <h2 class="font-display font-700 text-base text-on-surface">작업 허브</h2>
+          <span class="text-xs font-body text-secondary uppercase tracking-widest">/ Quick Actions</span>
+        </div>
+        <div class="grid grid-cols-2 gap-3 lg:grid-cols-4">
+
+          <button onclick="openModal('ip-modal')" class="dash-card bg-surface-lowest rounded-md p-4 flex flex-col items-center gap-2.5 group cursor-pointer" style="box-shadow: 0 2px 8px rgba(0,32,91,0.04);">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: linear-gradient(135deg, #000d2f, #00205b);">
+              <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            </div>
+            <span class="text-sm font-display font-700 text-on-surface">IP 요청</span>
+            <span class="text-xs font-body text-secondary text-center">공인 IP 주소 신청</span>
+          </button>
+
+          <button onclick="openModal('equipment-modal')" class="dash-card bg-surface-lowest rounded-md p-4 flex flex-col items-center gap-2.5 group cursor-pointer" style="box-shadow: 0 2px 8px rgba(0,32,91,0.04);">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: linear-gradient(135deg, #000d2f, #00205b);">
+              <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+            </div>
+            <span class="text-sm font-display font-700 text-on-surface">장비 대여</span>
+            <span class="text-xs font-body text-secondary text-center">학과 보유 기자재 대여</span>
+          </button>
+
+          <button onclick="openModal('printer-modal')" class="dash-card bg-surface-lowest rounded-md p-4 flex flex-col items-center gap-2.5 group cursor-pointer" style="box-shadow: 0 2px 8px rgba(0,32,91,0.04);">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: linear-gradient(135deg, 0, #000d2f, #00205b);" style="background: linear-gradient(135deg, #000d2f, #00205b);">
+              <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+            </div>
+            <span class="text-sm font-display font-700 text-on-surface">프린터 요청</span>
+            <span class="text-xs font-body text-secondary text-center">프린터 사용 신청</span>
+          </button>
+
+          <button onclick="openModal('maintenance-modal')" class="dash-card bg-surface-lowest rounded-md p-4 flex flex-col items-center gap-2.5 group cursor-pointer" style="box-shadow: 0 2px 8px rgba(0,32,91,0.04);">
+            <div class="w-10 h-10 rounded-lg flex items-center justify-center" style="background: linear-gradient(135deg, #000d2f, #00205b);">
+              <svg class="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+            </div>
+            <span class="text-sm font-display font-700 text-on-surface">유지보수 신청</span>
+            <span class="text-xs font-body text-secondary text-center">기자재 수리 요청</span>
+          </button>
+
+        </div>
+      </section>
+
+      <!-- ===== ROW 4: Incidents + Notices ===== -->
+      <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+
+        <!-- Incident Response -->
+        <section class="dash-card bg-surface-lowest rounded-md p-5" style="box-shadow: 0 2px 8px rgba(0,32,91,0.04);">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <div class="text-xs font-display font-600 uppercase tracking-widest text-secondary mb-0.5">Operations</div>
+              <h2 class="font-display font-700 text-base text-on-surface">장애 대응 현황</h2>
+            </div>
+            <button class="text-xs font-body text-primary">로그 보기</button>
+          </div>
+          <div class="space-y-2">
+
+            <div class="flex items-start gap-3 p-3 bg-surface-low rounded-md">
+              <span class="flex-shrink-0 w-2 h-2 mt-1.5 rounded-full bg-amber-500 pulse-dot"></span>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-sm font-body font-600 text-on-surface truncate">학과 네트워크 지연</span>
+                  <span class="flex-shrink-0 text-xs font-body px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">처리중</span>
+                </div>
+                <div class="text-xs font-body text-secondary mt-0.5">2024-05-22 09:15</div>
+              </div>
+            </div>
+
+            <div class="flex items-start gap-3 p-3 bg-surface-low rounded-md">
+              <span class="flex-shrink-0 w-2 h-2 mt-1.5 rounded-full bg-amber-500 pulse-dot"></span>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-sm font-body font-600 text-on-surface truncate">프린터 클라이언트 #4 오프라인</span>
+                  <span class="flex-shrink-0 text-xs font-body px-2 py-0.5 rounded-full bg-amber-100 text-amber-700">처리중</span>
+                </div>
+                <div class="text-xs font-body text-secondary mt-0.5">2024-05-21 14:30</div>
+              </div>
+            </div>
+
+            <div class="flex items-start gap-3 p-3 bg-surface-low rounded-md">
+              <span class="flex-shrink-0 w-2 h-2 mt-1.5 rounded-full bg-success"></span>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-sm font-body font-600 text-on-surface truncate">무단 로그인 시도 5회 차단</span>
+                  <span class="flex-shrink-0 text-xs font-body px-2 py-0.5 rounded-full bg-success-container text-success">완료</span>
+                </div>
+                <div class="text-xs font-body text-secondary mt-0.5">2024-05-20 22:44</div>
+              </div>
+            </div>
+
+            <div class="flex items-start gap-3 p-3 bg-surface-low rounded-md">
+              <span class="flex-shrink-0 w-2 h-2 mt-1.5 rounded-full bg-success"></span>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between gap-2">
+                  <span class="text-sm font-body font-600 text-on-surface truncate">DB 서버 응답 지연 해결</span>
+                  <span class="flex-shrink-0 text-xs font-body px-2 py-0.5 rounded-full bg-success-container text-success">완료</span>
+                </div>
+                <div class="text-xs font-body text-secondary mt-0.5">2024-05-19 18:10</div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+        <!-- Notices -->
+        <section class="dash-card bg-surface-lowest rounded-md p-5" style="box-shadow: 0 2px 8px rgba(0,32,91,0.04);">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <div class="text-xs font-display font-600 uppercase tracking-widest text-secondary mb-0.5">Announcements</div>
+              <h2 class="font-display font-700 text-base text-on-surface">공지사항</h2>
+            </div>
+            <button class="text-xs font-body text-primary">전체 보기</button>
+          </div>
+          <div class="space-y-0">
+
+            <div class="flex items-start gap-3 py-3" style="border-bottom: 1px solid #f2f4f6;">
+              <span class="flex-shrink-0 text-xs font-body px-2 py-0.5 rounded bg-primary/10 text-primary font-600 mt-0.5">공지</span>
+              <div>
+                <div class="text-sm font-body font-500 text-on-surface">전체 서버 통합 업그레이드 프로그램 시작</div>
+                <div class="text-xs font-body text-secondary mt-0.5">2024-05-22</div>
+              </div>
+            </div>
+
+            <div class="flex items-start gap-3 py-3" style="border-bottom: 1px solid #f2f4f6;">
+              <span class="flex-shrink-0 text-xs font-body px-2 py-0.5 rounded bg-primary/10 text-primary font-600 mt-0.5">공지</span>
+              <div>
+                <div class="text-sm font-body font-500 text-on-surface">보안 강화를 위한 새로운 네트워크 보안 프로토콜 적용</div>
+                <div class="text-xs font-body text-secondary mt-0.5">2024-05-22</div>
+              </div>
+            </div>
+
+            <div class="flex items-start gap-3 py-3" style="border-bottom: 1px solid #f2f4f6;">
+              <span class="flex-shrink-0 text-xs font-body px-2 py-0.5 rounded bg-amber-100 text-amber-700 font-600 mt-0.5">안내</span>
+              <div>
+                <div class="text-sm font-body font-500 text-on-surface">서버실 출입 시 각 층 증명에 대한 업데이트 지침</div>
+                <div class="text-xs font-body text-secondary mt-0.5">2024-05-21</div>
+              </div>
+            </div>
+
+            <div class="flex items-start gap-3 py-3">
+              <span class="flex-shrink-0 text-xs font-body px-2 py-0.5 rounded bg-surface-high text-secondary font-600 mt-0.5">일반</span>
+              <div>
+                <div class="text-sm font-body font-500 text-on-surface">2024년 2분기 서버 정기 점검 일정 안내</div>
+                <div class="text-xs font-body text-secondary mt-0.5">2024-05-18</div>
+              </div>
+            </div>
+
+          </div>
+        </section>
+
+      </div>
+
+      <!-- Footer -->
+      <div class="mt-6 pt-4 flex items-center justify-between text-xs font-body text-secondary" style="border-top: 1px solid #e6e8ea;">
+        <span>2024 한국외국어대학교 서버종합상황실</span>
+        <span>HUFS Server Ops · 개인정보보호방침 · 이용약관</span>
+      </div>
+
+    </main>
+  </div>
+
+  <!-- ===== MODALS ===== -->
+
+  <!-- IP Request Modal -->
+  <div id="ip-modal" class="fixed inset-0 z-50 hidden items-center justify-center" style="background: rgba(0,13,47,0.4); backdrop-filter: blur(4px);">
+    <div class="bg-surface-lowest rounded-md p-6 w-full max-w-md mx-4" style="box-shadow: 0 24px 80px rgba(0,32,91,0.18);">
+      <div class="flex items-center justify-between mb-5">
+        <div>
+          <div class="text-xs font-display font-600 uppercase tracking-widest text-secondary mb-0.5">Service Request</div>
+          <h3 class="font-display font-700 text-lg text-on-surface">IP 주소 신청</h3>
+        </div>
+        <button onclick="closeModal('ip-modal')" class="text-secondary hover:text-on-surface">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <form class="space-y-3" onsubmit="return false;">
+        <div>
+          <label class="block text-xs font-body font-600 text-secondary mb-1 uppercase tracking-wide">신청자명</label>
+          <input type="text" placeholder="홍길동" class="w-full bg-surface-low rounded px-3 py-2 text-sm font-body text-on-surface outline-none focus:ring-2 focus:ring-primary/20" />
+        </div>
+        <div>
+          <label class="block text-xs font-body font-600 text-secondary mb-1 uppercase tracking-wide">소속 학과/부서</label>
+          <input type="text" placeholder="컴퓨터공학과" class="w-full bg-surface-low rounded px-3 py-2 text-sm font-body text-on-surface outline-none focus:ring-2 focus:ring-primary/20" />
+        </div>
+        <div>
+          <label class="block text-xs font-body font-600 text-secondary mb-1 uppercase tracking-wide">학번/사번</label>
+          <input type="text" placeholder="2024XXXXX" class="w-full bg-surface-low rounded px-3 py-2 text-sm font-body text-on-surface outline-none focus:ring-2 focus:ring-primary/20" />
+        </div>
+        <div>
+          <label class="block text-xs font-body font-600 text-secondary mb-1 uppercase tracking-wide">신청 목적</label>
+          <textarea placeholder="IP 신청 목적을 상세히 기재해 주세요." rows="3" class="w-full bg-surface-low rounded px-3 py-2 text-sm font-body text-on-surface outline-none focus:ring-2 focus:ring-primary/20 resize-none"></textarea>
+        </div>
+        <div class="flex gap-2 pt-2">
+          <button onclick="closeModal('ip-modal')" type="button" class="flex-1 py-2 rounded bg-surface-high text-sm font-body font-600 text-secondary">취소</button>
+          <button type="submit" class="flex-1 py-2 rounded text-sm font-body font-600 text-white" style="background: linear-gradient(135deg, #000d2f, #00205b);">신청하기</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Equipment Modal -->
+  <div id="equipment-modal" class="fixed inset-0 z-50 hidden items-center justify-center" style="background: rgba(0,13,47,0.4); backdrop-filter: blur(4px);">
+    <div class="bg-surface-lowest rounded-md p-6 w-full max-w-md mx-4" style="box-shadow: 0 24px 80px rgba(0,32,91,0.18);">
+      <div class="flex items-center justify-between mb-5">
+        <div>
+          <div class="text-xs font-display font-600 uppercase tracking-widest text-secondary mb-0.5">Service Request</div>
+          <h3 class="font-display font-700 text-lg text-on-surface">장비 대여 신청</h3>
+        </div>
+        <button onclick="closeModal('equipment-modal')" class="text-secondary hover:text-on-surface">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <form class="space-y-3" onsubmit="return false;">
+        <div>
+          <label class="block text-xs font-body font-600 text-secondary mb-1 uppercase tracking-wide">신청자명</label>
+          <input type="text" placeholder="홍길동" class="w-full bg-surface-low rounded px-3 py-2 text-sm font-body text-on-surface outline-none focus:ring-2 focus:ring-primary/20" />
+        </div>
+        <div>
+          <label class="block text-xs font-body font-600 text-secondary mb-1 uppercase tracking-wide">대여 장비</label>
+          <select class="w-full bg-surface-low rounded px-3 py-2 text-sm font-body text-on-surface outline-none focus:ring-2 focus:ring-primary/20">
+            <option>노트북 (Dell XPS 13)</option>
+            <option>태블릿 (iPad Pro)</option>
+            <option>카메라 (Canon EOS R)</option>
+            <option>빔프로젝터</option>
+            <option>기타</option>
+          </select>
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-body font-600 text-secondary mb-1 uppercase tracking-wide">대여 시작일</label>
+            <input type="date" class="w-full bg-surface-low rounded px-3 py-2 text-sm font-body text-on-surface outline-none focus:ring-2 focus:ring-primary/20" />
+          </div>
+          <div>
+            <label class="block text-xs font-body font-600 text-secondary mb-1 uppercase tracking-wide">반납 예정일</label>
+            <input type="date" class="w-full bg-surface-low rounded px-3 py-2 text-sm font-body text-on-surface outline-none focus:ring-2 focus:ring-primary/20" />
+          </div>
+        </div>
+        <div class="flex gap-2 pt-2">
+          <button onclick="closeModal('equipment-modal')" type="button" class="flex-1 py-2 rounded bg-surface-high text-sm font-body font-600 text-secondary">취소</button>
+          <button type="submit" class="flex-1 py-2 rounded text-sm font-body font-600 text-white" style="background: linear-gradient(135deg, #000d2f, #00205b);">신청하기</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Printer Modal -->
+  <div id="printer-modal" class="fixed inset-0 z-50 hidden items-center justify-center" style="background: rgba(0,13,47,0.4); backdrop-filter: blur(4px);">
+    <div class="bg-surface-lowest rounded-md p-6 w-full max-w-md mx-4" style="box-shadow: 0 24px 80px rgba(0,32,91,0.18);">
+      <div class="flex items-center justify-between mb-5">
+        <div>
+          <div class="text-xs font-display font-600 uppercase tracking-widest text-secondary mb-0.5">Service Request</div>
+          <h3 class="font-display font-700 text-lg text-on-surface">프린터 사용 신청</h3>
+        </div>
+        <button onclick="closeModal('printer-modal')" class="text-secondary hover:text-on-surface">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <form class="space-y-3" onsubmit="return false;">
+        <div>
+          <label class="block text-xs font-body font-600 text-secondary mb-1 uppercase tracking-wide">신청자명</label>
+          <input type="text" placeholder="홍길동" class="w-full bg-surface-low rounded px-3 py-2 text-sm font-body text-on-surface outline-none focus:ring-2 focus:ring-primary/20" />
+        </div>
+        <div>
+          <label class="block text-xs font-body font-600 text-secondary mb-1 uppercase tracking-wide">프린터 선택</label>
+          <select class="w-full bg-surface-low rounded px-3 py-2 text-sm font-body text-on-surface outline-none focus:ring-2 focus:ring-primary/20">
+            <option>프린터 #1 (1층 로비)</option>
+            <option>프린터 #2 (2층 열람실)</option>
+            <option>프린터 #3 (3층 행정실)</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-xs font-body font-600 text-secondary mb-1 uppercase tracking-wide">출력 매수</label>
+          <input type="number" min="1" placeholder="10" class="w-full bg-surface-low rounded px-3 py-2 text-sm font-body text-on-surface outline-none focus:ring-2 focus:ring-primary/20" />
+        </div>
+        <div class="flex gap-2 pt-2">
+          <button onclick="closeModal('printer-modal')" type="button" class="flex-1 py-2 rounded bg-surface-high text-sm font-body font-600 text-secondary">취소</button>
+          <button type="submit" class="flex-1 py-2 rounded text-sm font-body font-600 text-white" style="background: linear-gradient(135deg, #000d2f, #00205b);">신청하기</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Maintenance Modal -->
+  <div id="maintenance-modal" class="fixed inset-0 z-50 hidden items-center justify-center" style="background: rgba(0,13,47,0.4); backdrop-filter: blur(4px);">
+    <div class="bg-surface-lowest rounded-md p-6 w-full max-w-md mx-4" style="box-shadow: 0 24px 80px rgba(0,32,91,0.18);">
+      <div class="flex items-center justify-between mb-5">
+        <div>
+          <div class="text-xs font-display font-600 uppercase tracking-widest text-secondary mb-0.5">Service Request</div>
+          <h3 class="font-display font-700 text-lg text-on-surface">유지보수 신청</h3>
+        </div>
+        <button onclick="closeModal('maintenance-modal')" class="text-secondary hover:text-on-surface">
+          <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <form class="space-y-3" onsubmit="return false;">
+        <div>
+          <label class="block text-xs font-body font-600 text-secondary mb-1 uppercase tracking-wide">신청자명</label>
+          <input type="text" placeholder="홍길동" class="w-full bg-surface-low rounded px-3 py-2 text-sm font-body text-on-surface outline-none focus:ring-2 focus:ring-primary/20" />
+        </div>
+        <div>
+          <label class="block text-xs font-body font-600 text-secondary mb-1 uppercase tracking-wide">장비/시설 종류</label>
+          <input type="text" placeholder="서버 랙 #3, 노트북 등" class="w-full bg-surface-low rounded px-3 py-2 text-sm font-body text-on-surface outline-none focus:ring-2 focus:ring-primary/20" />
+        </div>
+        <div>
+          <label class="block text-xs font-body font-600 text-secondary mb-1 uppercase tracking-wide">장애 내용</label>
+          <textarea placeholder="발생한 장애 및 증상을 상세히 기재해 주세요." rows="3" class="w-full bg-surface-low rounded px-3 py-2 text-sm font-body text-on-surface outline-none focus:ring-2 focus:ring-primary/20 resize-none"></textarea>
+        </div>
+        <div>
+          <label class="block text-xs font-body font-600 text-secondary mb-1 uppercase tracking-wide">긴급도</label>
+          <select class="w-full bg-surface-low rounded px-3 py-2 text-sm font-body text-on-surface outline-none focus:ring-2 focus:ring-primary/20">
+            <option>일반 (3~5 영업일)</option>
+            <option>긴급 (당일 처리 요청)</option>
+          </select>
+        </div>
+        <div class="flex gap-2 pt-2">
+          <button onclick="closeModal('maintenance-modal')" type="button" class="flex-1 py-2 rounded bg-surface-high text-sm font-body font-600 text-secondary">취소</button>
+          <button type="submit" class="flex-1 py-2 rounded text-sm font-body font-600 text-white" style="background: linear-gradient(135deg, #000d2f, #00205b);">신청하기</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Current time
+    function updateTime() {
+      const now = new Date();
+      const str = now.toLocaleString('ko-KR', { year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      document.getElementById('current-time').textContent = '마지막 업데이트: ' + str;
+    }
+    updateTime();
+    setInterval(updateTime, 1000);
+
+    // Modal
+    function openModal(id) {
+      const el = document.getElementById(id);
+      el.classList.remove('hidden');
+      el.classList.add('flex');
+    }
+    function closeModal(id) {
+      const el = document.getElementById(id);
+      el.classList.add('hidden');
+      el.classList.remove('flex');
+    }
+    // Close on backdrop click
+    document.querySelectorAll('[id$="-modal"]').forEach(modal => {
+      modal.addEventListener('click', function(e) {
+        if (e.target === this) closeModal(this.id);
+      });
+    });
+
+    // Nav active state
+    document.querySelectorAll('.nav-item').forEach(item => {
+      item.addEventListener('click', function() {
+        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+        this.classList.add('active');
+      });
+    });
+  </script>
+</body>
+</html>
