@@ -6,7 +6,8 @@ import Ticker from './Ticker'
 import Sidebar from './Sidebar'
 
 export default function AppShell({ children }: { children: React.ReactNode }) {
-  const [open, setOpen] = useState(false)
+  const [open, setOpen]       = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
   const pathname = usePathname()
 
   // 페이지 이동 시 사이드바 닫기
@@ -20,34 +21,38 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <>
-      <Ticker onMenuClick={() => setOpen(true)} />
+      <Ticker
+        onMenuClick={() => setOpen(true)}
+        isAdmin={isAdmin}
+        onAdminToggle={() => setIsAdmin(v => !v)}
+      />
 
-      <div className="flex overflow-hidden" style={{ height: 'calc(100vh - 36px)' }}>
+      {/* 모바일: calc(100vh - 48px), 데스크톱: calc(100vh - 36px) */}
+      <div className="flex overflow-hidden h-[calc(100vh-48px)] md:h-[calc(100vh-36px)]">
 
-        {/* 데스크톱 사이드바 — md 이상에서만 플렉스 흐름에 포함 */}
+        {/* 데스크톱 사이드바 */}
         <div className="hidden md:block flex-shrink-0 h-full">
-          <Sidebar />
+          <Sidebar isAdmin={isAdmin} />
         </div>
 
         {/* 모바일 오버레이 */}
         {open && (
           <div
-            className="fixed inset-0 z-40 bg-black/50 md:hidden"
-            style={{ top: 36 }}
+            className="fixed z-40 bg-black/50 md:hidden left-0 right-0 bottom-0 top-12"
             onClick={() => setOpen(false)}
           />
         )}
 
-        {/* 모바일 사이드바 패널 — fixed, md 이상에서는 숨김 */}
+        {/* 모바일 사이드바 패널 */}
         <div
           className={[
-            'fixed z-50 md:hidden',
+            'fixed z-50 md:hidden top-12',
             'transition-transform duration-300 ease-in-out',
             open ? 'translate-x-0' : '-translate-x-full',
           ].join(' ')}
-          style={{ top: 36, left: 0, height: 'calc(100vh - 36px)', width: 220 }}
+          style={{ left: 0, height: 'calc(100vh - 48px)', width: 220 }}
         >
-          <Sidebar onClose={() => setOpen(false)} />
+          <Sidebar isAdmin={isAdmin} onClose={() => setOpen(false)} />
         </div>
 
         {/* 메인 콘텐츠 */}

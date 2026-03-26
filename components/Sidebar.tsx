@@ -3,12 +3,36 @@
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-const NAV = [
+const NAV_NORMAL = [
   {
     group: '메뉴',
     items: [
-      { href: '/',         label: '대시보드',      icon: <GridIcon /> },
-      { href: '/network',  label: '네트워크',       icon: <NetworkIcon /> },
+      { href: '/',        label: '대시보드', icon: <GridIcon /> },
+    ],
+  },
+  {
+    group: '서비스',
+    items: [
+      { href: '/requests/ip',          label: 'IP 요청',      icon: <LayersIcon /> },
+      { href: '/requests/equipment',   label: '장비 대여',    icon: <MonitorIcon /> },
+      { href: '/requests/printer',     label: '프린터 요청',  icon: <PrinterIcon /> },
+      { href: '/requests/maintenance', label: '유지보수 신청', icon: <WrenchIcon /> },
+    ],
+  },
+  {
+    group: '관리',
+    items: [
+      { href: '/notices', label: '공지사항', icon: <BellIcon /> },
+    ],
+  },
+]
+
+const NAV_ADMIN = [
+  {
+    group: '메뉴',
+    items: [
+      { href: '/',        label: '대시보드', icon: <GridIcon /> },
+      { href: '/network', label: '네트워크', icon: <NetworkIcon /> },
     ],
   },
   {
@@ -31,10 +55,12 @@ const NAV = [
 
 interface Props {
   onClose?: () => void
+  isAdmin?: boolean
 }
 
-export default function Sidebar({ onClose }: Props) {
+export default function Sidebar({ onClose, isAdmin = false }: Props) {
   const pathname = usePathname()
+  const NAV = isAdmin ? NAV_ADMIN : NAV_NORMAL
 
   return (
     <aside
@@ -103,9 +129,16 @@ export default function Sidebar({ onClose }: Props) {
         ))}
       </nav>
 
+      {/* 모드 표시 */}
+      <div className="px-5 py-3" style={{ borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+        <div className={`text-xs font-semibold ${isAdmin ? 'text-amber-400' : 'text-white/30'}`}>
+          {isAdmin ? '🔓 관리자 모드' : '🔒 일반 모드'}
+        </div>
+      </div>
+
       {/* Footer */}
       <div className="px-5 py-4" style={{ borderTop: '1px solid rgba(255,255,255,0.10)' }}>
-        <div className="text-white/30 text-xs">HUFS Server Ops</div>
+        <div className="text-white/30 text-xs">HUFS ICE Server Ops</div>
         <div className="text-white/20 text-xs mt-0.5">© 2024 한국외국어대학교</div>
       </div>
     </aside>
