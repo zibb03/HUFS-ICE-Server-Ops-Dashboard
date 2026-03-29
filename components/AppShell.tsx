@@ -19,6 +19,9 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
     return () => { document.body.style.overflow = '' }
   }, [open])
 
+  // 로그인 페이지는 쉘 없이 렌더링
+  if (pathname === '/login') return <>{children}</>
+
   return (
     <>
       <Ticker
